@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 
 // components
@@ -8,36 +10,33 @@ import ItemList from "./ItemList";
 // utils
 import { cn, formatNumber } from "@/lib/utils";
 import { hover } from "@/lib/hover";
+import {
+  useGetCheckoutsQuery,
+  usePaymentMutation,
+} from "@/services/transaction";
+import { useState } from "react";
+
+import { DeliveryMethod } from "@/types/delivery-method";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 export default function Checkout() {
-  const deliveryMethod = "HOME_DELIVERY";
-  const products = [
-    {
-      img: "/vegetables.jpeg",
-      price: 40000,
-      rating: 4.9,
-      sold: 40,
-      name: "Kembang Kol",
-      unit: "kg",
-      itemCount: 1,
-    },
-    {
-      img: "/vegetables.jpeg",
-      price: 25000,
-      rating: 4.9,
-      sold: 40,
-      name: "Kentang Gondangdia",
-      unit: "kg",
-      itemCount: 2,
-    },
-  ];
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<DeliveryMethod>("HOME_DELIVERY");
+
+  const { data: dataCheckouts } = useGetCheckoutsQuery();
+  const [mutatePayment] = usePaymentMutation();
+  const products = dataCheckouts?.data || [];
 
   const totalPrice = products.reduce(
-    (total, product) => total + product.price * (product.itemCount || 1),
+    (total, product) => total + product.pricePerItem * (product.qty || 1),
     0
   );
   const totalItem = products.reduce(
-    (total, product) => total + (product.itemCount || 1),
+    (total, product) => total + (product.qty || 1),
     0
   );
   const applicationFee = 1000;
@@ -46,16 +45,47 @@ export default function Checkout() {
 
   const subtotal = totalPrice + deliveryFee + insurance + applicationFee;
 
+  const handlePayment = async () => {
+    try {
+      const data = {
+        application_fee: applicationFee,
+        asurance_fee: insurance,
+        delivery_fee: deliveryFee,
+        delivery_type: deliveryMethod,
+      };
+
+      await mutatePayment(data);
+
+      toast({
+        title: "Payment Success",
+        description: "Your payment has been landed successfully",
+        duration: 3000,
+      });
+
+      router.push("/history");
+    } catch (error) {
+      toast({
+        title: "Something went wrong",
+        description: "Payment failed",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
+  };
+
   return (
     <>
       <main className="flex flex-col w-full items-center pb-16 pt-5">
         <div className="w-content flex gap-8">
           <div className="flex-[2] flex flex-col gap-8">
-            <ItemList />
+            <ItemList products={products} />
 
             <div className="separator" />
 
-            <DeliveryOptions />
+            <DeliveryOptions
+              value={deliveryMethod}
+              onChange={setDeliveryMethod}
+            />
           </div>
 
           <div className="flex-1 h-auto">
@@ -96,11 +126,13 @@ export default function Checkout() {
               </div>
             </div>
             <div className="flex flex-1">
-              <Link className="w-[100%]" href={"/payment"}>
-                <Button className={cn("w-[100%] mt-6 bg-leaf", hover.shadow)}>
-                  Lanjutkan Pembayaran
-                </Button>
-              </Link>
+              <Button
+                type="button"
+                className={cn("w-[100%] mt-6 bg-leaf", hover.shadow)}
+                onClick={handlePayment}
+              >
+                Lanjutkan Pembayaran
+              </Button>
             </div>
           </div>
         </div>

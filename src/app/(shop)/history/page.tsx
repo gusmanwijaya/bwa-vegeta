@@ -5,7 +5,6 @@ import Link from "next/link";
 
 // components
 import { ProductShowcase } from "@/components/product/product-showcase";
-import { ProductDetails } from "@/components/product/product-card";
 import {
   Select,
   SelectContent,
@@ -24,17 +23,14 @@ import { cn } from "@/lib/utils";
 // assets
 import GoldBadge from "@/assets/images/badge-gold.png";
 import ProductsJSON from "@/assets/json/products.json";
+import { useGetAllProductsQuery } from "@/services/product";
+import { useSession } from "next-auth/react";
+import { useHistoryQuery } from "@/services/transaction";
 
 export default function History() {
-  const [transactions] = useState([
-    {
-      products: ProductsJSON,
-    },
-    {
-      products: ProductsJSON,
-    },
-  ]);
-  const [recommendedProducts] = useState<ProductDetails[]>(ProductsJSON);
+  const { data: session } = useSession();
+  const { data: recommendedProducts } = useGetAllProductsQuery({});
+  const { data: history } = useHistoryQuery({});
   const [activePage, setActivePage] = useState(1);
   const [totalPage] = useState(5);
 
@@ -45,14 +41,14 @@ export default function History() {
           <div className="flex justify-center pt-3 pb-2">
             <div className="w-[71px] h-[71px] rounded-[20px] relative overflow-hidden">
               <Image
-                src="https://ui-avatars.com/api/?name=Taufan+Fadhilah&background=random"
+                src={`https://ui-avatars.com/api/?name=${session?.user?.name}&background=random`}
                 layout="fill"
                 alt=""
                 objectFit="cover"
               />
             </div>
           </div>
-          <div className="font-semibold">Taufan Fadhilah</div>
+          <div className="font-semibold">{session?.user?.name}</div>
           <div className="flex items-center justify-center">
             <div className="w-[14px] h-[20px] relative mr-2">
               <Image src={GoldBadge} layout="fill" alt="" objectFit="cover" />
@@ -63,7 +59,9 @@ export default function History() {
           <div className="w-[100%] gap-3 flex flex-col">
             <div className="mt-6">
               <div>Transaksi bulan ini</div>
-              <div className="text-[20px] font-bold">120 x</div>
+              <div className="text-[20px] font-bold">
+                {history?.data?.totalTransactions || 0} x
+              </div>
             </div>
             <div className="">
               <div>Belanja bulan ini</div>
@@ -104,10 +102,10 @@ export default function History() {
             </div>
           </div>
 
-          {transactions.map((transaction, index) => (
+          {history?.data?.transactions?.map((transaction, index) => (
             <ProductHistory
               key={`productHistory${index}`}
-              products={transaction.products}
+              transaction={transaction}
             />
           ))}
 
@@ -138,7 +136,7 @@ export default function History() {
         </div>
         <ProductShowcase
           gridConfig={"grid-cols-4"}
-          products={recommendedProducts}
+          products={recommendedProducts?.data?.products?.slice(0, 4) || []}
         />
       </div>
     </main>

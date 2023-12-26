@@ -52,17 +52,25 @@ const CommonFooter: React.FC<HeaderProps> = () => {
                 </div>
               </div>
 
-              <Input
-                className="w-full p-4"
-                type="text"
-                placeholder="Masukkan alamat email"
-              />
-              <Input
-                className="w-full p-4"
-                type="text"
-                placeholder="Masukkan nomor telepon"
-              />
-              <Button className={cn("py-2 px-7 bg-carrot", hover.shadow)}>
+              <div className="w-[100%] relative">
+                <Input
+                  className="w-[100%] p-4"
+                  type="text"
+                  placeholder="Masukkan alamat email"
+                />
+              </div>
+
+              <div className="w-[100%] relative">
+                <Input
+                  className="w-[100%] p-4"
+                  type="text"
+                  placeholder="Masukkan nomor telepon"
+                />
+              </div>
+              <Button
+                type="button"
+                className={cn("py-2 px-7 bg-carrot", hover.shadow)}
+              >
                 Subscribe
               </Button>
             </div>
@@ -174,8 +182,8 @@ const CommonFooter: React.FC<HeaderProps> = () => {
             </div>
             <div className="">
               Made by{" "}
-              <a href="https://taufanfadhilah.web.id/">
-                <span className="text-leaf">@taufanfadhilah</span>
+              <a href="https://gusmanwijaya.com/">
+                <span className="text-leaf">Gusman Wijaya</span>
               </a>
             </div>
           </div>

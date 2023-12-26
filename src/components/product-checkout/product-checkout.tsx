@@ -14,6 +14,7 @@ import { formatNumber } from "@/lib/utils";
 interface CheckoutProps {
   isChecked?: boolean;
   productDetails: ProductDetails;
+  qty: number;
   onChangeItemCount: (count: number) => void;
   onDeleteItem: () => void;
 }
@@ -21,10 +22,11 @@ interface CheckoutProps {
 const ProductCheckout: React.FC<CheckoutProps> = ({
   isChecked,
   productDetails,
+  qty,
   onDeleteItem,
   onChangeItemCount,
 }: CheckoutProps) => {
-  const [itemCount, setItemCount] = useState(productDetails.itemCount || 1);
+  const [itemCount, setItemCount] = useState(qty || 1);
 
   return (
     <>
@@ -48,7 +50,7 @@ const ProductCheckout: React.FC<CheckoutProps> = ({
           <div className="flex flex-1 flex-col justify-center gap-2">
             <div>{productDetails.name}</div>
             <div className="font-semibold">
-              Rp {formatNumber(productDetails.price)}
+              Rp {formatNumber(+productDetails.price)}
             </div>
           </div>
           <CommonStepper
